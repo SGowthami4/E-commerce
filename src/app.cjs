@@ -5,7 +5,6 @@ const authRoutes=require('./routes/authRoutes.cjs')
 const productRoutes=require('./routes/productRoutes.cjs')
 const cartRoutes=require('./routes/cartRoutes.cjs')
 const orderRoutes=require('./routes/orderRoutes.cjs')
-const sellerRoutes=require('./routes/sellerRoutes.cjs')
 
 dotenv.config();
 const app=express()
@@ -16,7 +15,5 @@ app.use(cors());
 app.use('/auth',authRoutes);
 app.use('/products',productRoutes);
 app.use('/cart',cartRoutes);
-app.use('/orders',orderRoutes);
-// app.use('/seller',sellerRoutes);
-
+// app.use('/orders',orderRoutes);
 module.exports = app;

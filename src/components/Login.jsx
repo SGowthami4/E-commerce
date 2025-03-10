@@ -43,7 +43,8 @@ export default function Login() {
       console.log("Login successful:", data);
       console.log(data.role);
       localStorage.setItem("authToken", data.token.token);
-      localStorage.setItem('role',data.token.role)
+      localStorage.setItem("role",data.token.userInfo.role)
+      localStorage.setItem("userInfo",JSON.stringify(data.token.userInfo))
       localStorage.setItem("loginSuccess", "true");
       if(data.token.role){
         setRole(data.token.role)
@@ -54,8 +55,8 @@ export default function Login() {
       setTimeout(() => {
         setOpen(false);
         localStorage.removeItem("loginSuccess"); 
-        navigate(`/dashboard/${data.token.role}`);
-      }, 3000); 
+        navigate(`/dashboard/${data.token.userInfo.role}`);
+      }, 1500); 
       setLoginForm({
         email:"",
         password:""
@@ -133,7 +134,7 @@ export default function Login() {
   loginMessage === "Login Successful" ? (
     <Snackbar
       open={open}
-      autoHideDuration={5000} 
+      autoHideDuration={1000} 
       onClose={handleClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }} 
     >

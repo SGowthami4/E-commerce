@@ -9,16 +9,25 @@ const addproduct=async(req,res)=>{
     }
 };
 
-const getproduct=async(req,res)=>{
+const getUserProducts=async(req,res)=>{
     try {
         const { category } = req.query;
-        const products = await productService.fetchproduct(category);
+        const products = await productService.fetchUserProduct(category);
 
         res.status(200).json({ fetchedProducts: products });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+const getCategories=async(req,res)=>{
+    try{
+        const categories=await productService.getCategories();
+        res.status(200).json({categories:categories});
+    }catch(error){
+        res.status(500).json({error:error.message})
+    }
+}
 
 const updateproduct=async(req,res)=>{
     try {
@@ -43,9 +52,21 @@ const deleteproduct=async(req,res)=>{
         res.status(400).json({ error: error.message });
     }
 };
+const getSellerProducts=async(req,res)=>{
+    try {
+        const { category } = req.query;
+        const products = await productService.fetchSellerproducts(category);
+
+        res.status(200).json({ fetchedProducts: products });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 module.exports={
     addproduct,
-    getproduct,
+    getUserProducts,
     updateproduct,
-    deleteproduct
+    deleteproduct,
+    getSellerProducts,
+    getCategories
 };

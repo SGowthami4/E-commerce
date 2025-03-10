@@ -80,8 +80,8 @@ const loginUser = async ({ email, password }) => {
             JWT_SECRET
         );
         return {
+            userInfo:user,
             token:token,
-            role:user.role
         }
     } catch (error) {
         console.error("Error in loginUser:", error.message);

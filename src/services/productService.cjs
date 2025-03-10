@@ -1,10 +1,10 @@
 const prisma=require('../prisma/prismaClient.cjs');
 
-const insertproduct=async({productDetails})=>{
+const insertproduct = async (productDetails) => {
+    return await prisma.products.create({ data: productDetails });
+};
 
-        return await prisma.products.create({data:productDetails})
-}
-const fetchproduct=async(category)=>{
+const fetchUserProduct = async (category) => {
     if (category) {
         return await prisma.products.findMany({
             where: { category },
@@ -23,10 +23,24 @@ const deletion=async(id)=>{
         where: { product_id: Number(id) },
     });
 }
-
+const fetchSellerproducts=async(sellerId)=>{
+    return await prisma.products.findMany({
+        where:{sellerId}
+    });
+}
+const getCategories=async()=>{
+    return await prisma.products.findMany({
+        distinct:'category',
+        select:{
+            category:true,
+        },
+    })
+}
 module.exports={
     insertproduct,
-    fetchproduct,
+   fetchUserProduct,
     updation,
-    deletion
+    deletion,
+    fetchSellerproducts,
+    getCategories
 }

@@ -14,11 +14,10 @@ model Users {
   role               String
   email              String      @unique
   registrationStatus Boolean     @default(false)
-
- products       Products[]  
- WishListItems      WishList[]
-  cart               cartItems[]
-  order              Orders[]
+  products       Products[]  
+  cartProducts     cartItems[]
+  WishListItems      WishList[]
+  orders              Order[]
 }
 
 model Products {
@@ -32,14 +31,15 @@ model Products {
   sellerId         Int            
   soldCount        Int            @default(0)
   tags             String[]
- Users       Users   @relation(fields: [sellerId], references: [id])
+  Users       Users   @relation(fields: [sellerId], references: [id])
   wishListProducts WishList[]
   cartProducts     cartItems[]
-  order            Orders[]
+  orderItems        OrderItem[]
+  isDeleted   Boolean @default(false)
 }
 
 model cartItems {
-  cartId       Int      @id @default(autoincrement())
+  id      Int  @id @default(autoincrement()) 
   userId       Int
   productId    Int
   quantity     Int
@@ -55,13 +55,19 @@ model WishList {
   customerId   Users    @relation(fields: [userId], references: [id])
 }
 
-model Orders{
+model Order{
   id Int @id @default(autoincrement())
+  totalAmount Float
+  createdAt DateTime @default(now())
   userId Int
   user Users @relation(fields: [userId],references: [id])
-  productId Int
-  product Products @relation(fields: [productId],references: [product_id])
-  totalAmount Float
+  orderItems OrderItem[]
   status Boolean
-  createdAt DateTime @default(now())
+}
+model OrderItem{
+    id Int @id @default(autoincrement())
+    orderId Int
+    order Order @relation(fields: [orderId],references: [id])
+    productId Int
+    product Products @relation(fields: [productId],references: [product_id])
 }
