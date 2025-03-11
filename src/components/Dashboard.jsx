@@ -1,4 +1,4 @@
-import { Avatar, IconButton,Card,CardMedia,Typography, CardContent, CardActions, Button,Select ,MenuItem,Chip,Box,TextField, Badge} from '@mui/material';
+import { Avatar, IconButton,Card,CardMedia,Typography, CardContent, CardActions, Button,Select ,MenuItem,Chip,Box,TextField, Backdrop} from '@mui/material';
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useEffect } from 'react';
@@ -16,6 +16,12 @@ import { useTheme } from '@mui/material/styles';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { FavoriteRounded } from '@mui/icons-material';
 import AccessibleBadges from './AccessibleBadge';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
 export default function Dashboard() {
 const [fetchedProducts,setFetchedProducts]=useState([])
 const [sortValue, setSortValue] = useState(""); 
@@ -29,12 +35,24 @@ const [openDialog, setOpenDialog] = useState(false);
 const [categories, setCategories] = useState([]);
 const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
 const [userInfo,setUserInfo]=useState({})
-const [addToCart,setAddToCart]=useState([])
+const [open,setOpen]=useState(false);
+const [addToCart,setAddToCart]=useState({
+  userId:"",
+  productId:"",
+  quantity:""
+})
+const [selectedCartProduct, setSelectedCartProduct] = useState({});
+const [cartCount,setCartCount]=useState(0)
 useEffect(() => { 
     fetchProducts();
-    console.log(localStorage.getItem('userInfo'));  
+    console.log(localStorage.getItem('userInfo')); 
     setUserInfo(JSON.parse(localStorage.getItem('userInfo')));
+    
+    
 }, []);
+const getInitial = (name) => {
+  return name && name.length > 0 ? name.charAt(0).toUpperCase() : "?";
+};
 const fetchProducts = async () => {
   try {
     const response = await fetch("http://localhost:3005/products/user-products"); 
@@ -96,10 +114,47 @@ const fetchCategories = async () => {
     console.error("Error fetching categories:", error);
   }
 };
-const handleAddToCart=(product)=>{
-  console.log(product,userInfo);
-  
+const handleAddToCart=async()=>{
+  console.log(userInfo);
+  if (!addToCart.quantity || addToCart.quantity < 1) {
+    alert("Quantity must be at least 1");
+    return;
+  }
+  try{
+    const response=await fetch('http://localhost:3005/cart/add',{
+      method:'POST',
+      headers:{
+       "Content-type":"application/json", 
+      },
+      body:JSON.stringify(addToCart)
+    })
+    if (!response.ok) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.message || "Adding to cart failed");
+    }else{
+      alert("Added to cart successfully")
+      selectedCartProduct({})
+      addToCart({ 
+        userId:"",
+        productId:"",
+        quantity:""})
+    }
+  }catch (error) {
+    console.error(error)
+  }
 }
+const handleClickOpen = (product) => {
+ setSelectedCartProduct(product)
+  setOpen(true);
+  
+};
+useEffect(() => {
+  console.log("Updated selectedCartProduct:", selectedCartProduct);
+}, [selectedCartProduct]);
+
+const handleClose = () => {
+          setOpen(false);
+        };
  
 return (
     <div>
@@ -187,7 +242,7 @@ return (
         {!isLargeScreen?(
         <Popover>
           <PopoverTrigger style={{border:"none",backgroundColor:'Background'}}>
-      <Avatar onClick={()=>setOpenDialog(!openDialog)} sx={{cursor:'pointer'}}>{userInfo.username[0]}</Avatar>
+      <Avatar onClick={()=>setOpenDialog(!openDialog)} sx={{cursor:'pointer'}}>{getInitial(userInfo?.username)}</Avatar>
       </PopoverTrigger>
       <PopoverContent style={{margin:'7px'}}>
         <Card sx={{boxShadow:5}}>
@@ -360,9 +415,65 @@ return (
               </Typography> 
             </CardContent>
             <CardActions style={{display:'flex',justifyContent:'flex-start',alignContent:'center'}}>
-              <Button variant="contained" endIcon={<ShoppingCart />} style={{fontWeight:'bold'}} onClick={()=>handleAddToCart(item)}>
+              <Button variant="contained" endIcon={<ShoppingCart />} style={{fontWeight:'bold'}} onClick={()=>handleClickOpen(item)}>
                 Add to cart
               </Button> 
+              <Dialog
+  open={open}
+  onClose={handleClose}
+  componentsProps={{
+    backdrop: { inert: open ? undefined : "true" } 
+  }}
+  slotProps={{backdrop:{sx:{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}}}
+>
+  <DialogTitle>Add to Cart</DialogTitle>
+  <DialogContent>
+    <Card sx={{width:'300px',display:'flex',flexDirection:'column',gap:"10px",padding:"10px"}}>
+  <DialogContentText sx={{fontWeight:'bold',padding:"0 20px"}}>{selectedCartProduct.title}</DialogContentText>
+  <CardMedia
+              component="img"
+              image={selectedCartProduct.image}
+              alt={selectedCartProduct.title}
+              style={{objectFit:'contain',aspectRatio:'1/1',width:"150px",height:"150px"}}
+            />
+    <TextField
+      required
+      type="number"
+      label="quantity"
+      id="quantity"
+      name='quantity'
+      slotProps={{
+        input: { min: 1, max: selectedCartProduct.quantity },
+      }}
+      value={addToCart.quantity}
+      onChange={(e) => {
+        let value = Number(e.target.value);
+        if (value < 1) value = 1;
+        if (value >  selectedCartProduct.quantity) value =  selectedCartProduct.quantity;
+
+        setAddToCart({
+          ...addToCart,
+          quantity: value,
+          userId: userInfo.id,
+          productId: selectedCartProduct.product_id,
+        });
+      }}
+      error={addToCart.quantity < 1 || addToCart.quantity > selectedCartProduct.quantity}
+      helperText={
+        addToCart.quantity < 1
+          ? "Quantity must be at least 1"
+          : addToCart.quantity >  selectedCartProduct.quantity
+          ? `Maximum available stock: ${ selectedCartProduct.quantity}`
+          : ""
+      }     
+    />
+    </Card>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleClose}>Cancel</Button>
+    <Button onClick={()=>handleAddToCart()}>Confirm</Button> 
+  </DialogActions>
+</Dialog>
             </CardActions>
           </Card>
         ))

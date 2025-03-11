@@ -41,7 +41,6 @@ export default function Login() {
       }
       const data = await response.json();
       console.log("Login successful:", data);
-      console.log(data.role);
       localStorage.setItem("authToken", data.token.token);
       localStorage.setItem("role",data.token.userInfo.role)
       localStorage.setItem("userInfo",JSON.stringify(data.token.userInfo))
@@ -114,7 +113,8 @@ export default function Login() {
                   aria-label={
                     showPassword ? 'hide the password' : 'display the password'
                   }
-                  onClick={() => setShowPassword((prev) => !prev)}                  onMouseDown={(e)=>e.preventDefault()}
+                  onClick={() => setShowPassword((prev) => !prev)} 
+                  onMouseDown={(e)=>e.preventDefault()}
                   onMouseUp={(e)=>e.preventDefault()}
                   edge="end"
                 >

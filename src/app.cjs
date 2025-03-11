@@ -4,6 +4,7 @@ const dotenv=require('dotenv')
 const authRoutes=require('./routes/authRoutes.cjs')
 const productRoutes=require('./routes/productRoutes.cjs')
 const cartRoutes=require('./routes/cartRoutes.cjs')
+const wishListRoutes=require('./routes/wishlistRoutes.cjs')
 const orderRoutes=require('./routes/orderRoutes.cjs')
 
 dotenv.config();
@@ -15,5 +16,6 @@ app.use(cors());
 app.use('/auth',authRoutes);
 app.use('/products',productRoutes);
 app.use('/cart',cartRoutes);
+app.use('wishlist',wishListRoutes)
 // app.use('/orders',orderRoutes);
 module.exports = app;
